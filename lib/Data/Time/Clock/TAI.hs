@@ -41,7 +41,7 @@ utcDayLength lsmap day = do
 dayStart :: LeapSecondMap -> Day -> Maybe AbsoluteTime
 dayStart lsmap day = do
     i <- lsmap day
-    return $ addAbsoluteTime (realToFrac $ (toModifiedJulianDay day) * 86400 + toInteger i) taiEpoch
+    return $ addAbsoluteTime (realToFrac $ (toModifiedJulianDay day) * 86400 + fromIntegral i) taiEpoch
 
 utcToTAITime :: LeapSecondMap -> UTCTime -> Maybe AbsoluteTime
 utcToTAITime lsmap (UTCTime day dtime) = do

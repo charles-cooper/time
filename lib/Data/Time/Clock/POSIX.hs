@@ -19,7 +19,7 @@ posixSecondsToUTCTime i = let
 
 utcTimeToPOSIXSeconds :: UTCTime -> POSIXTime
 utcTimeToPOSIXSeconds (UTCTime d t) =
- (fromInteger (diffDays d systemEpochDay) * posixDayLength) + min posixDayLength (realToFrac t)
+ (fromIntegral (diffDays d systemEpochDay) * posixDayLength) + min posixDayLength (realToFrac t)
 
 systemToPOSIXTime :: SystemTime -> POSIXTime
 systemToPOSIXTime (MkSystemTime s ns) = (fromIntegral s) + (fromIntegral ns) * 1E-9

@@ -319,13 +319,13 @@ parseValue l mpad c =
 -- * Instances for the time package types
 --
 
-data DayComponent = Century Integer -- century of all years
-                  | CenturyYear Integer -- 0-99, last two digits of both real years and week years
-                  | YearMonth Int -- 1-12
-                  | MonthDay Int -- 1-31
-                  | YearDay Int -- 1-366
-                  | WeekDay Int -- 1-7 (mon-sun)
-                  | YearWeek WeekType Int -- 1-53 or 0-53
+data DayComponent = Century Int32 -- century of all years
+                  | CenturyYear Int32 -- 0-99, last two digits of both real years and week years
+                  | YearMonth Int32 -- 1-12
+                  | MonthDay Int32 -- 1-31
+                  | YearDay Int32 -- 1-366
+                  | WeekDay Int32 -- 1-7 (mon-sun)
+                  | YearWeek WeekType Int32 -- 1-53 or 0-53
 
 data WeekType = ISOWeek | SundayWeek | MondayWeek
 
@@ -339,10 +339,11 @@ instance ParseTime Day where
             ra :: (Read a) => Maybe a
             ra = readMaybe x
 
-            zeroBasedListIndex :: [String] -> Maybe Int
-            zeroBasedListIndex ss = elemIndex (up x) $ fmap up ss
+            zeroBasedListIndex :: [String] -> Maybe Int32
+            zeroBasedListIndex ss = fmap fromIntegral $
+              elemIndex (up x) $ fmap up ss
 
-            oneBasedListIndex :: [String] -> Maybe Int
+            oneBasedListIndex :: [String] -> Maybe Int32
             oneBasedListIndex ss = do
                 index <- zeroBasedListIndex ss
                 return $ 1 + index
@@ -507,7 +508,7 @@ instance ParseTime TimeOfDay where
                     return $ TimeOfDay h a s
                 'S' -> do
                     a <- ra
-                    return $ TimeOfDay h m (fromInteger a)
+                    return $ TimeOfDay h m a
                 'q' -> do
                     a <- ra
                     return $ TimeOfDay h m (mkPico (floor s) a)
@@ -530,12 +531,12 @@ instance ParseTime LocalTime where
 enumDiff :: (Enum a) => a -> a -> Int
 enumDiff a b = (fromEnum a) - (fromEnum b)
 
-getMilZoneHours :: Char -> Maybe Int
+getMilZoneHours :: Char -> Maybe Int32
 getMilZoneHours c | c < 'A' = Nothing
-getMilZoneHours c | c <= 'I' = Just $ 1 + enumDiff c 'A'
+getMilZoneHours c | c <= 'I' = Just $ 1 + fromIntegral (enumDiff c 'A')
 getMilZoneHours 'J' = Nothing
-getMilZoneHours c | c <= 'M' = Just $ 10 + enumDiff c 'K'
-getMilZoneHours c | c <= 'Y' = Just $ (enumDiff 'N' c) - 1
+getMilZoneHours c | c <= 'M' = Just $ 10 + fromIntegral (enumDiff c 'K')
+getMilZoneHours c | c <= 'Y' = Just $ fromIntegral (enumDiff 'N' c) - 1
 getMilZoneHours 'Z' = Just 0
 getMilZoneHours _ = Nothing
 
@@ -560,7 +561,7 @@ instance ParseTime TimeZone where
         f t _ = t
         in Just . foldl f (minutesToTimeZone 0)
 
-readTzOffset :: String -> Maybe Int
+readTzOffset :: String -> Maybe Int32
 readTzOffset str = let
 
     getSign '+' = Just 1

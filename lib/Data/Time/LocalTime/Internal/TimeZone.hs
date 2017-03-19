@@ -33,7 +33,7 @@ import Data.Data
 -- | A TimeZone is a whole number of minutes offset from UTC, together with a name and a \"just for summer\" flag.
 data TimeZone = TimeZone {
     -- | The number of minutes offset from UTC. Positive means local time will be later in the day than UTC.
-    timeZoneMinutes :: Int,
+    timeZoneMinutes :: Int32,
     -- | Is this time zone just persisting for the summer?
     timeZoneSummerOnly :: Bool,
     -- | The name of the zone, typically a three- or four-letter acronym.
@@ -50,14 +50,14 @@ instance NFData TimeZone where
     rnf (TimeZone m so n) = rnf m `seq` rnf so `seq` rnf n `seq` ()
 
 -- | Create a nameless non-summer timezone for this number of minutes.
-minutesToTimeZone :: Int -> TimeZone
+minutesToTimeZone :: Int32 -> TimeZone
 minutesToTimeZone m = TimeZone m False ""
 
 -- | Create a nameless non-summer timezone for this number of hours.
-hoursToTimeZone :: Int -> TimeZone
+hoursToTimeZone :: Int32 -> TimeZone
 hoursToTimeZone i = minutesToTimeZone (60 * i)
 
-showT :: PadOption -> Int -> String
+showT :: PadOption -> Int32 -> String
 showT opt t = showPaddedNum opt ((div t 60) * 100 + (mod t 60))
 
 timeZoneOffsetString'' :: PadOption -> TimeZone -> String

@@ -19,14 +19,15 @@ import Data.Data
 import Data.Time.Clock.Internal.DiffTime
 import Data.Time.Calendar.Private
 import Data.Time.LocalTime.Internal.TimeZone
+import Data.Int
 
 
 -- | Time of day as represented in hour, minute and second (with picoseconds), typically used to express local time of day.
 data TimeOfDay = TimeOfDay {
     -- | range 0 - 23
-    todHour    :: Int,
+    todHour    :: Int32,
     -- | range 0 - 59
-    todMin     :: Int,
+    todMin     :: Int32,
     -- | Note that 0 <= 'todSec' < 61, accomodating leap seconds.
     -- Any local minute may have a leap second, since leap seconds happen in all zones simultaneously
     todSec     :: Pico
@@ -54,7 +55,7 @@ midday = TimeOfDay 12 0 0
 instance Show TimeOfDay where
     show (TimeOfDay h m s) = (show2 h) ++ ":" ++ (show2 m) ++ ":" ++ (show2Fixed s)
 
-makeTimeOfDayValid :: Int -> Int -> Pico -> Maybe TimeOfDay
+makeTimeOfDayValid :: Int32 -> Int32 -> Pico -> Maybe TimeOfDay
 makeTimeOfDayValid h m s = do
     _ <- clipValid 0 23 h
     _ <- clipValid 0 59 m
@@ -62,13 +63,13 @@ makeTimeOfDayValid h m s = do
     return (TimeOfDay h m s)
 
 -- | Convert a time of day in UTC to a time of day in some timezone, together with a day adjustment.
-utcToLocalTimeOfDay :: TimeZone -> TimeOfDay -> (Integer,TimeOfDay)
-utcToLocalTimeOfDay zone (TimeOfDay h m s) = (fromIntegral (div h' 24),TimeOfDay (mod h' 24) (mod m' 60) s) where
+utcToLocalTimeOfDay :: TimeZone -> TimeOfDay -> (Int32,TimeOfDay)
+utcToLocalTimeOfDay zone (TimeOfDay h m s) = (div h' 24,TimeOfDay (mod h' 24) (mod m' 60) s) where
     m' = m + timeZoneMinutes zone
     h' = h + (div m' 60)
 
 -- | Convert a time of day in some timezone to a time of day in UTC, together with a day adjustment.
-localToUTCTimeOfDay :: TimeZone -> TimeOfDay -> (Integer,TimeOfDay)
+localToUTCTimeOfDay :: TimeZone -> TimeOfDay -> (Int32,TimeOfDay)
 localToUTCTimeOfDay zone = utcToLocalTimeOfDay (minutesToTimeZone (negate (timeZoneMinutes zone)))
 
 posixDayLength :: DiffTime

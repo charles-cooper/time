@@ -8,6 +8,7 @@ module Data.Time.Format
 import Data.Maybe
 import Data.Char
 import Data.Fixed
+import Data.List (genericIndex)
 
 import Data.Time.Clock.Internal.UniversalTime
 import Data.Time.Clock.Internal.UTCTime
@@ -243,7 +244,7 @@ todAMPM locale day = let
     (am,pm) = amPm locale
     in if (todHour day) < 12 then am else pm
 
-tod12Hour :: TimeOfDay -> Int
+tod12Hour :: TimeOfDay -> Int32
 tod12Hour day = (mod (todHour day - 1) 12) + 1
 
 showPaddedFixedFraction :: HasResolution a => PadOption -> Fixed a -> String
@@ -307,9 +308,9 @@ instance FormatTime Day where
     formatCharacter 'y' = Just $ padNum True  2 '0' $ mod100 . fst . toOrdinalDate
     formatCharacter 'C' = Just $ padNum False 2 '0' $ div100 . fst . toOrdinalDate
     -- Month of Year
-    formatCharacter 'B' = Just $ padString $ \locale -> fst . (\(_,m,_) -> (months locale) !! (m - 1)) . toGregorian
-    formatCharacter 'b' = Just $ padString $ \locale -> snd . (\(_,m,_) -> (months locale) !! (m - 1)) . toGregorian
-    formatCharacter 'h' = Just $ padString $ \locale -> snd . (\(_,m,_) -> (months locale) !! (m - 1)) . toGregorian
+    formatCharacter 'B' = Just $ padString $ \locale -> fst . (\(_,m,_) -> (months locale) `genericIndex` (m - 1)) . toGregorian
+    formatCharacter 'b' = Just $ padString $ \locale -> snd . (\(_,m,_) -> (months locale) `genericIndex` (m - 1)) . toGregorian
+    formatCharacter 'h' = Just $ padString $ \locale -> snd . (\(_,m,_) -> (months locale) `genericIndex` (m - 1)) . toGregorian
     formatCharacter 'm' = Just $ padNum True  2 '0' $ (\(_,m,_) -> m) . toGregorian
     -- Day of Month
     formatCharacter 'd' = Just $ padNum True  2 '0' $ (\(_,_,d) -> d) . toGregorian
@@ -326,8 +327,8 @@ instance FormatTime Day where
     formatCharacter 'u' = Just $ padNum True  1 '0' $ (\(_,_,d) -> d) . toWeekDate
 
     -- Day of week
-    formatCharacter 'a' = Just $ padString $ \locale -> snd . ((wDays locale) !!) . snd . sundayStartWeek
-    formatCharacter 'A' = Just $ padString $ \locale -> fst . ((wDays locale) !!) . snd . sundayStartWeek
+    formatCharacter 'a' = Just $ padString $ \locale -> snd . (genericIndex (wDays locale)) . snd . sundayStartWeek
+    formatCharacter 'A' = Just $ padString $ \locale -> fst . (genericIndex (wDays locale)) . snd . sundayStartWeek
     formatCharacter 'U' = Just $ padNum True  2 '0' $ fst . sundayStartWeek
     formatCharacter 'w' = Just $ padNum True  1 '0' $ snd . sundayStartWeek
     formatCharacter 'W' = Just $ padNum True  2 '0' $ fst . mondayStartWeek
